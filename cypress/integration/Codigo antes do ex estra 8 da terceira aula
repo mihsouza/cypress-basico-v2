@@ -1,0 +1,64 @@
+/// <reference types="Cypress" />
+
+describe('Central de Atendimento ao Cliente TAT', function() {
+    const nome = 'Michele'
+    const sobrenome = 'Souza'
+    const email = 'michele@email.com'
+    const emailInvalido = 'email.com'
+    const longText = 'Testando minha primeira aplicação usando cypress. Preenchendo um campo de texto com um texto grande para utilizar o delay'
+
+    beforeEach(function(){
+        cy.visit('./src/index.html')
+    })
+    it('verifica o título da aplicação', function() {
+        cy.title().should('be.equal', 'Central de Atendimento ao Cliente TAT')
+    })
+    it('preenche os campos obrigatórios e envia o formulário', function() {
+        cy.get('#firstName').type(nome)
+        cy.get('#lastName').type(sobrenome)
+        cy.get('#email').type(email)
+        cy.get('#open-text-area').type(longText, {delay: 0})
+        cy.get('button[type="submit"]').click()
+        cy.get('.success').should('be.visible') //.success identifica que é uma classse
+    })
+    it('exibe mensagem de erro ao submeter o formulário com um email com formatação inválida', function() {
+        cy.get('#firstName').type(nome)
+        cy.get('#lastName').type(sobrenome)
+        cy.get('#email').type(emailInvalido)
+        cy.get('#open-text-area').type(longText, {delay: 0})
+        cy.get('button[type="submit"]').click()
+        cy.get('.error').should('be.visible')
+    })
+    it('Campo de telefone continua vazio se não preenchido com valor numérico', function() {
+        cy.get('#phone').type('abc').should('have.value', '')
+    })
+    it('exibe mensagem de erro quando o telefone se torna obrigatório mas não é preenchido antes do envio do formulário', function() {
+        cy.get('#firstName').type(nome)
+        cy.get('#lastName').type(sobrenome)
+        cy.get('#email').type(email)
+        cy.get('#phone-checkbox').click()
+        cy.get('#open-text-area').type(longText, {delay: 0})
+        cy.get('button[type="submit"]').click()
+        cy.get('.error').should('be.visible')
+    })
+    it('preenche e limpa os campos nome, sobrenome, email e telefone', function() {
+        cy.get('#firstName').type(nome).should('have.value', nome).clear().should('have.value', '')
+        cy.get('#lastName').type(sobrenome).should('have.value', sobrenome).clear().should('have.value', '')
+        cy.get('#email').type(email).should('have.value', email).clear().should('have.value', '')
+        cy.get('#open-text-area').type(longText, {delay: 0}).should('have.value', longText).clear().should('have.value', '')
+    })
+    it('exibe mensagem de erro ao submeter o formulário sem preencher os campos obrigatórios', function() {
+        cy.get('button[type="submit"]').click()
+        cy.get('.error').should('be.visible')
+    })
+    //Exemplo com um comendo customizado, melhor para centralizar o código e evitar de ficar diferente em vários lugares
+    //Ver novamente a aula 16 para ver como passar variável
+    it.only('envia o formuário com sucesso usando um comando customizado', function() {
+        cy.fillMandatoryFieldsAndSubmit()
+        cy.get('.success').should('be.visible')
+    })
+    //it.only('Teste', function() {
+
+    //})
+})
+
